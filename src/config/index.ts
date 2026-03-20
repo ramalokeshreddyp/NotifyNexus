@@ -21,5 +21,7 @@ export const config = {
     port: parseInt(process.env.PORT || '3000'),
     maxRetries: parseInt(process.env.MAX_RETRIES || '3'),
     retryInitialDelay: parseInt(process.env.RETRY_INITIAL_DELAY || '1000'),
+    startupRetryAttempts: parseInt(process.env.STARTUP_RETRY_ATTEMPTS || '20'),
+    startupRetryDelayMs: parseInt(process.env.STARTUP_RETRY_DELAY_MS || '3000'),
   },
 };

@@ -153,6 +153,7 @@ This repository includes a Render Blueprint file: `render.yaml`.
 Notes:
 - The app now initializes DB schema automatically on startup, so no manual SQL migration step is required for Render.
 - On free/starter plans, first request after idle may be slower due to cold start behavior.
+- If deploy logs show `Failed to start server` with `AggregateError`, verify that your web service has valid `DB_*` and `MQ_*` environment variables set. On Render, this usually means the Blueprint was not applied or dependencies were not attached.
 
 ### Verify Health
 

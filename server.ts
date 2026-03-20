@@ -6,6 +6,36 @@ import { processNotificationEvent } from './src/consumer/index';
 import apiRouter from './src/api/index';
 import { initializeDatabaseSchema, pool } from './src/db/index';
 
+async function retryOperation(
+  operationName: string,
+  operation: () => Promise<void>,
+  attempts: number,
+  delayMs: number,
+) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await operation();
+      logger.info(`${operationName} succeeded`, { attempt, attempts });
+      return;
+    } catch (error) {
+      lastError = error;
+      logger.warn(`${operationName} failed`, {
+        attempt,
+        attempts,
+        error: String(error),
+      });
+
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 async function startServer() {
   const app = express();
   app.use(express.json());
@@ -55,11 +85,24 @@ async function startServer() {
   app.use('/api/v1', apiRouter);
 
   try {
-    // Ensure schema exists in environments without init scripts (for example Render managed Postgres).
-    await initializeDatabaseSchema();
+    await retryOperation(
+      'Database schema initialization',
+      async () => {
+        // Ensure schema exists in environments without init scripts (for example Render managed Postgres).
+        await initializeDatabaseSchema();
+      },
+      config.app.startupRetryAttempts,
+      config.app.startupRetryDelayMs,
+    );
 
-    // Connect to Message Queue
-    await connectMQ();
+    await retryOperation(
+      'RabbitMQ connection',
+      async () => {
+        await connectMQ();
+      },
+      config.app.startupRetryAttempts,
+      config.app.startupRetryDelayMs,
+    );
 
     // Start consuming events — channel is passed to consumer via callback
     await consumeEvents(processNotificationEvent);
@@ -73,7 +116,11 @@ async function startServer() {
       });
     });
   } catch (error) {
-    logger.error('Failed to start server', { error: String(error) });
+    logger.error('Failed to start server', {
+      error: String(error),
+      startupRetryAttempts: config.app.startupRetryAttempts,
+      startupRetryDelayMs: config.app.startupRetryDelayMs,
+    });
     process.exit(1);
   }
 
