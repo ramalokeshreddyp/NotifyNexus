@@ -1,0 +1,5 @@
+{
+  "name": "ReliableRelay",
+  "description": "A robust backend notification service with RabbitMQ, idempotency, and exponential backoff retries.",
+  "requestFramePermissions": []
+}
