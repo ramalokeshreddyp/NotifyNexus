@@ -143,13 +143,12 @@ async function handleRetry(
     delayMs: delay,
   });
 
-  // Ack the original message first, then re-publish after delay
-  setTimeout(() => {
-    channel.sendToQueue(config.mq.queueName, Buffer.from(JSON.stringify(event)), {
-      persistent: true,
-      headers: { 'x-retry-count': nextRetryCount },
-    });
-  }, delay);
+  // Publish to retry queue with per-message TTL so delay survives process restarts.
+  channel.sendToQueue(`${config.mq.queueName}.retry`, Buffer.from(JSON.stringify(event)), {
+    persistent: true,
+    expiration: String(delay),
+    headers: { 'x-retry-count': nextRetryCount },
+  });
 
   channel.ack(msg);
 }

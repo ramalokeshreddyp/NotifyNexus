@@ -104,7 +104,7 @@ sequenceDiagram
 5. if duplicate completed event: ack and stop
 6. dispatch notification via mock external call
 7. on success: mark COMPLETED and insert SENT log
-8. on transient error with attempts left: schedule backoff and republish with incremented header
+8. on transient error with attempts left: publish to retry queue with incremented header and per-message TTL
 9. on permanent error or max retries exhausted: mark FAILED, insert DLQ_MOVED log, publish terminal payload to DLQ
 
 ## 7. Idempotency Implementation Details
@@ -212,7 +212,6 @@ Health checks are configured for all three services to improve deterministic sta
 
 ### Known Limits and Evolution Path
 
-- delayed retry is app-scheduled; can be upgraded to durable delayed queues
 - current integration tests mock transport boundaries; full containerized E2E tests can be added for CI parity
 - throughput is intentionally conservative (prefetch 1); can be tuned with partition-safe processing policy
 

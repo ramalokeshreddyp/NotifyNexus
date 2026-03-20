@@ -28,12 +28,22 @@ export async function connectMQ(): Promise<void> {
       },
     });
 
+    // Retry queue uses per-message TTL and routes back to main queue when expired.
+    await ch.assertQueue(`${config.mq.queueName}.retry`, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': '',
+        'x-dead-letter-routing-key': config.mq.queueName,
+      },
+    });
+
     // Process one message at a time
     await ch.prefetch(1);
 
     logger.info('Connected to RabbitMQ', {
       host: config.mq.host,
       queue: config.mq.queueName,
+      retryQueue: `${config.mq.queueName}.retry`,
       dlq: config.mq.dlqName,
     });
   } catch (error) {

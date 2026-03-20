@@ -48,7 +48,6 @@ describe('Consumer - processNotificationEvent', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
   afterEach(() => {
@@ -126,15 +125,12 @@ describe('Consumer - processNotificationEvent', () => {
       validEvent.event_id,
       idempotency.EventStatus.FAILED,
     );
-
-    // Fast-forward timers to trigger the retry publication
-    jest.runAllTimers();
-
     expect(mockChannel.sendToQueue).toHaveBeenCalledWith(
-      expect.any(String),
+      'notification_events.retry',
       expect.any(Buffer),
       expect.objectContaining({
         persistent: true,
+        expiration: '1000',
         headers: { 'x-retry-count': 1 },
       }),
     );

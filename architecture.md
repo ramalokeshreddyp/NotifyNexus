@@ -17,7 +17,8 @@ flowchart LR
     Q -->|consume| CON[Consumer Worker]
     CON --> IDEM[(processed_events)]
     CON --> LOGS[(notification_logs)]
-    CON -->|retry publish with x-retry-count| Q
+    CON -->|retry publish with TTL + x-retry-count| RQ[(RabbitMQ notification_events.retry)]
+    RQ -->|TTL expires then DLX route| Q
     CON -->|publish on terminal failure| DLQ[(notification_dead_letter_queue)]
 ```
 
@@ -160,14 +161,14 @@ Health checks validate database connectivity and MQ channel availability. Docker
 
 - horizontal scaling: multiple consumer instances are supported by queue competing consumers
 - strict ordering: currently not guaranteed globally; can be added with partitioning/sharding by recipient
-- retry durability: currently re-publish scheduling is app-driven; can be evolved to delayed-exchange plugin or retry queues with TTL
+- retry durability: retries are broker-managed via retry queue + per-message TTL, so delay behavior survives process restarts
 - observability: structured JSON logs are ready for ELK/OpenSearch ingestion
 
 ## 13. Tradeoffs
 
 | Choice | Benefit | Tradeoff |
 |---|---|---|
-| RabbitMQ classic queues | Simple setup and strong delivery semantics | Requires careful retry topology for durable delayed retries |
+| RabbitMQ classic queues | Simple setup and strong delivery semantics | Requires careful queue argument configuration for retry and DLQ routing |
 | PostgreSQL for idempotency and logs | Strong consistency and SQL auditability | Adds DB write path latency |
-| Consumer-level retry scheduling | Easy to reason about | Delays are in-memory until republish is performed |
+| Retry queue with TTL + DLX | Durable delayed retries and cleaner consumer loop | Additional queue topology complexity |
 | Prefetch=1 | Limits concurrency hazards and simplifies exactly-once effects | Lower per-instance throughput |

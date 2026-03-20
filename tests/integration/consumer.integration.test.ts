@@ -157,8 +157,6 @@ describe('Integration Tests: Consumer End-to-End Flow', () => {
         payload: { subject: 'Test', force_fail: true },
       };
 
-      jest.useFakeTimers();
-
       // Mock: new event
       mockQuery.mockResolvedValueOnce({ rowCount: 1, rows: [{ status: 'PROCESSING' }] });
 
@@ -168,20 +166,16 @@ describe('Integration Tests: Consumer End-to-End Flow', () => {
       // Original message acked
       expect(mockChannel.ack).toHaveBeenCalledWith(msg);
 
-      // Fast-forward timers to trigger scheduled retry
-      jest.runAllTimers();
-
       // Verify re-publication with retry count = 1
       expect(mockChannel.sendToQueue).toHaveBeenCalledWith(
-        expect.any(String),
+        'notification_events.retry',
         expect.any(Buffer),
         expect.objectContaining({
           headers: { 'x-retry-count': 1 },
           persistent: true,
+          expiration: '1000',
         }),
       );
-
-      jest.useRealTimers();
     });
 
     it('should increase delay exponentially for each retry (1s, 5s, 25s)', async () => {
@@ -191,29 +185,20 @@ describe('Integration Tests: Consumer End-to-End Flow', () => {
         payload: { subject: 'Test', force_fail: true },
       };
 
-      jest.useFakeTimers();
-
       // Test at retry 1: delay should be 1000 * 5^1 = 5000ms
       mockQuery.mockResolvedValueOnce({ rowCount: 1, rows: [{ status: 'PROCESSING' }] });
 
       const msg = createMsg(failEvent, 1);
       await processNotificationEvent(msg, mockChannel);
 
-      // After 4999ms, retry should not have fired
-      jest.advanceTimersByTime(4999);
-      expect(mockChannel.sendToQueue).not.toHaveBeenCalled();
-
-      // At 5000ms, retry should fire
-      jest.advanceTimersByTime(1);
       expect(mockChannel.sendToQueue).toHaveBeenCalledWith(
-        expect.any(String),
+        'notification_events.retry',
         expect.any(Buffer),
         expect.objectContaining({
           headers: { 'x-retry-count': 2 },
+          expiration: '5000',
         }),
       );
-
-      jest.useRealTimers();
     });
   });
 

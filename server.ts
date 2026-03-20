@@ -88,7 +88,7 @@ async function startServer() {
     await retryOperation(
       'Database schema initialization',
       async () => {
-        // Ensure schema exists in environments without init scripts (for example Render managed Postgres).
+        // Ensure schema exists in environments without init scripts.
         await initializeDatabaseSchema();
       },
       config.app.startupRetryAttempts,
