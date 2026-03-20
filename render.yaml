@@ -1,0 +1,65 @@
+services:
+  - type: pserv
+    name: notifynexus-rabbitmq
+    env: docker
+    plan: starter
+    image:
+      url: rabbitmq:3-management
+    envVars:
+      - key: RABBITMQ_DEFAULT_USER
+        value: guest
+      - key: RABBITMQ_DEFAULT_PASS
+        value: guest
+
+  - type: web
+    name: notifynexus-api
+    env: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: notifynexus-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: notifynexus-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: notifynexus-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: notifynexus-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: notifynexus-db
+          property: database
+      - key: MQ_HOST
+        value: notifynexus-rabbitmq
+      - key: MQ_PORT
+        value: 5672
+      - key: MQ_USER
+        value: guest
+      - key: MQ_PASS
+        value: guest
+      - key: MQ_QUEUE_NAME
+        value: notification_events
+      - key: MQ_DLQ_NAME
+        value: notification_dead_letter_queue
+      - key: MAX_RETRIES
+        value: 3
+      - key: RETRY_INITIAL_DELAY
+        value: 1000
+      - key: PORT
+        value: 10000
+
+databases:
+  - name: notifynexus-db
+    plan: starter
+    databaseName: notifications_db
+    user: notifynexus

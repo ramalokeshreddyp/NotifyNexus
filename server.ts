@@ -4,7 +4,7 @@ import { logger } from './src/utils/logger';
 import { connectMQ, consumeEvents, getChannel, closeMQ, beginGracefulDrain } from './src/services/mq';
 import { processNotificationEvent } from './src/consumer/index';
 import apiRouter from './src/api/index';
-import { pool } from './src/db/index';
+import { initializeDatabaseSchema, pool } from './src/db/index';
 
 async function startServer() {
   const app = express();
@@ -55,6 +55,9 @@ async function startServer() {
   app.use('/api/v1', apiRouter);
 
   try {
+    // Ensure schema exists in environments without init scripts (for example Render managed Postgres).
+    await initializeDatabaseSchema();
+
     // Connect to Message Queue
     await connectMQ();
 

@@ -135,6 +135,25 @@ The service will be available at:
 - **RabbitMQ Management UI**: http://localhost:15672 (guest/guest)
 - **PostgreSQL**: localhost:5432
 
+### Deploy on Render (Live Backend)
+
+This repository includes a Render Blueprint file: `render.yaml`.
+
+1. Push your latest code to GitHub.
+2. In Render, click **New +** → **Blueprint**.
+3. Connect the `NotifyNexus` repository.
+4. Render will detect `render.yaml` and create:
+  - `notifynexus-api` (web service)
+  - `notifynexus-rabbitmq` (private RabbitMQ service)
+  - `notifynexus-db` (PostgreSQL database)
+5. Click **Apply** to provision all resources.
+6. Wait for all services to become healthy, then open:
+  - `https://<your-render-web-url>/api/health`
+
+Notes:
+- The app now initializes DB schema automatically on startup, so no manual SQL migration step is required for Render.
+- On free/starter plans, first request after idle may be slower due to cold start behavior.
+
 ### Verify Health
 
 ```bash
