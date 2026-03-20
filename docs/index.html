@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NotifyNexus - Event-Driven Notification Service</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2e;
+      --accent: #18b6a4;
+      --text: #e8eefc;
+      --muted: #9db0d5;
+      --border: #2a3a63;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 0%, #1e2d52 0%, #0b1220 40%, #080d18 100%);
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .hero {
+      background: linear-gradient(135deg, rgba(24,182,164,0.18), rgba(17,26,46,0.9));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    h1 { margin: 0 0 12px; font-size: 2rem; }
+    p { line-height: 1.6; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 8px; color: var(--accent); }
+    code {
+      display: block;
+      white-space: pre-wrap;
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      color: #c3d4ff;
+      font-family: Consolas, monospace;
+      font-size: 0.9rem;
+    }
+    .links {
+      margin-top: 18px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    a.btn {
+      text-decoration: none;
+      color: #041b18;
+      background: var(--accent);
+      padding: 10px 14px;
+      border-radius: 9px;
+      font-weight: 700;
+    }
+    a.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    footer {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>NotifyNexus</h1>
+      <p>
+        Event-Driven Notification Service built with Node.js, RabbitMQ, and PostgreSQL.
+        Designed for reliability with idempotency, retries, DLQ handling, and graceful shutdown.
+      </p>
+
+      <div class="grid">
+        <article class="card">
+          <h3>Core Features</h3>
+          <p>Idempotent processing, exponential backoff retries, dead-letter queue, structured JSON logs, and health checks.</p>
+        </article>
+        <article class="card">
+          <h3>API Endpoint</h3>
+          <p>POST /api/v1/publish-notification-event publishes events for asynchronous processing.</p>
+          <code>{
+  "event_id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "email",
+  "recipient": "user@example.com",
+  "payload": { "subject": "Hello", "body": "Welcome" },
+  "timestamp": "2026-03-20T00:00:00Z"
+}</code>
+        </article>
+        <article class="card">
+          <h3>Tested Stack</h3>
+          <p>Docker Compose with RabbitMQ, PostgreSQL, and Notification Service. Unit + integration tests included.</p>
+        </article>
+      </div>
+
+      <div class="links">
+        <a class="btn" href="https://github.com/ramalokeshreddyp/NotifyNexus" target="_blank" rel="noreferrer">View Repository</a>
+        <a class="btn ghost" href="https://github.com/ramalokeshreddyp/NotifyNexus/blob/main/README.md" target="_blank" rel="noreferrer">Read Full Docs</a>
+      </div>
+
+      <footer>GitHub Pages deployment for project showcase and quick access documentation.</footer>
+    </section>
+  </main>
+</body>
+</html>
